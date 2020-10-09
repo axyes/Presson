@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public class Board : MonoBehaviour
 {
-    // Start is called before the first frame update
+    //Initialisation du script
     void Start()
     {
         
