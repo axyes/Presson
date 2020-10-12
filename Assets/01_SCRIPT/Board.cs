@@ -76,6 +76,7 @@ public class Board : MonoBehaviour
     void Start()
     {
         CreateDefaultAnchor();
+        AdjustAnchorPosition();
         CreateSlots();
     }
 
@@ -92,6 +93,17 @@ public class Board : MonoBehaviour
             AnchorMax = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
             AnchorMin.position = new Vector3(10, -5, 0);
         }
+    }
+
+
+    private void AdjustAnchorPosition()
+    {
+        float scale = GetOptimalScale();
+        Vector3 defaultAnchorMaxPosition = AnchorMax.position;
+        Vector3 ajustedAnchorMaxPosition = AnchorMin.position + new Vector3(scale * TotalColumns, -scale * TotalLines, 0);
+        Vector3 delta = defaultAnchorMaxPosition - ajustedAnchorMaxPosition;
+        AnchorMax.position = ajustedAnchorMaxPosition + delta / 2;
+        AnchorMin.position += delta / 2;
     }
 
     private void CreateSlots()
