@@ -21,9 +21,12 @@ public static class Loader
         Editor
     }
 
+    //Création d'une classe vide qui hérite de MonoBehaviour (pour l'update)
+    private class simpleMonoBehaviour : MonoBehaviour { }
+
     //Delegate
     private static Action onLoaderCallback;
-
+    private static AsyncOperation loadingAsyncOperation;
     /// <summary>
     /// Charge la scene en passant par le loading
     /// </summary>
@@ -33,12 +36,44 @@ public static class Loader
         //Chaque fois que onLoadCallback est appelé, charge la scène sélectionnée
         onLoaderCallback = () =>
         {
-            SceneManager.LoadScene(scene.ToString());
+            GameObject loadingGameObject = new GameObject("Loading Game Object");
+            loadingGameObject.AddComponent<simpleMonoBehaviour>().StartCoroutine(LoadSceneAsync(scene));
         };
 
         //Charge la scène de loading
         SceneManager.LoadScene(Scene.Loading.ToString());
         
+    }
+
+    /// <summary>
+    /// Coroutine asynchronisée pour charger la futur scene
+    /// </summary>
+    /// <param name="scene"></param>
+    /// <returns></returns>
+    private static IEnumerator LoadSceneAsync(Scene scene)
+    {
+        yield return new WaitForSeconds(1.5f);
+        loadingAsyncOperation = SceneManager.LoadSceneAsync(scene.ToString());
+        while(!loadingAsyncOperation.isDone)
+        {
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// Renvoie la progression du chargement
+    /// </summary>
+    /// <returns></returns>
+    public static float GetLoadingProgress()
+    {
+        if(loadingAsyncOperation != null)
+        {
+            return loadingAsyncOperation.progress; //Renvoie la progression actuelle
+        }
+        else
+        {
+            return 1f; //Progression terminée
+        }
     }
 
     /// <summary>
