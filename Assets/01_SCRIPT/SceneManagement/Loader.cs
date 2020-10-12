@@ -52,7 +52,7 @@ public static class Loader
     /// <returns></returns>
     private static IEnumerator LoadSceneAsync(Scene scene)
     {
-        yield return new WaitForSeconds(1.5f);
+        yield return null;
         loadingAsyncOperation = SceneManager.LoadSceneAsync(scene.ToString());
         while(!loadingAsyncOperation.isDone)
         {
