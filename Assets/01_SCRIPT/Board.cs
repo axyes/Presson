@@ -31,27 +31,16 @@ public class Board : MonoBehaviour
 
     [Tooltip("Number of Playable columns")]
     [SerializeField]
-    int m_playableColumns = 20;
+    int m_columns = 20;
 
     [Tooltip("Number of Playable lines")]
     [SerializeField]
-    int m_playableLines = 12;
+    int m_lines = 12;
 
-    [Tooltip("Number of additional Colomn for the safe zone")]
-    [SerializeField]
-    int m_marginColomns = 0;
-
-    [Tooltip("Number of additional lines for the safe zone")]
-    [SerializeField]
-    int m_marginLines = 5;
 
     [Tooltip("Prefab of Playable Slot")]
     [SerializeField]
     GameObject m_prefabSlot = null;
-
-    [Tooltip("Prefab of Safe Slot")]
-    [SerializeField]
-    GameObject m_prefabSlotSafe = null;
 
     [Tooltip("TopLeft Corner position of the board")]
     [SerializeField]
@@ -63,14 +52,10 @@ public class Board : MonoBehaviour
 
 
     public Dictionary<Coordinates, Slot> Slots { get => slots; set => slots = value; }
-    public int PlayableColumns { get => m_playableColumns; set => m_playableColumns = value; }
-    public int PlayableLines { get => m_playableLines; set => m_playableLines = value; }
-    public int TotalColumns { get => m_playableColumns + m_marginColomns * 2;}
-    public int TotalLines { get => m_playableLines + m_marginLines * 2; }
-    public int FirstPlayableColumn { get => m_marginColomns; }
-    public int FirstPlayableLine { get => m_marginLines; }
-    public int LastPlayableColumn { get => TotalColumns-m_marginColomns-1; }
-    public int LastPlayableLine { get => TotalLines - m_marginLines - 1; }
+    public int Columns { get => m_columns; set => m_columns = value; }
+    public int LastColumn { get => m_columns - 1; }
+    public int Lines { get => m_lines; set => m_lines = value; }
+    public int LastLine { get => m_lines - 1; }
 
     //Initialisation du script
     void Start()
@@ -100,7 +85,7 @@ public class Board : MonoBehaviour
     {
         float scale = GetOptimalScale();
         Vector3 defaultAnchorMaxPosition = AnchorMax.position;
-        Vector3 ajustedAnchorMaxPosition = AnchorMin.position + new Vector3(scale * TotalColumns, -scale * TotalLines, 0);
+        Vector3 ajustedAnchorMaxPosition = AnchorMin.position + new Vector3(scale * Columns, -scale * Lines, 0);
         Vector3 delta = defaultAnchorMaxPosition - ajustedAnchorMaxPosition;
         AnchorMax.position = ajustedAnchorMaxPosition + delta / 2;
         AnchorMin.position += delta / 2;
@@ -108,9 +93,9 @@ public class Board : MonoBehaviour
 
     private void CreateSlots()
     {
-        for (int j = 0; j < TotalLines; j++)
+        for (int j = 0; j < Lines; j++)
         {
-            for (int i = 0; i < TotalColumns; i++)
+            for (int i = 0; i < Columns; i++)
             {
                 Coordinates slotCoor = new Coordinates(i, j);
                 CreateSlot(slotCoor);         
@@ -118,10 +103,10 @@ public class Board : MonoBehaviour
         }
     }
 
-    private Slot CreateSlot(Coordinates p_Coordinates)
+    private Slot CreateSlot(Coordinates p_coordinates)
     {
         /// Security test
-        if (slots.ContainsKey(p_Coordinates)) {
+        if (slots.ContainsKey(p_coordinates)) {
             Debug.LogWarning("Slot already exist");
             return null;
         }
@@ -130,12 +115,7 @@ public class Board : MonoBehaviour
         GameObject slotObj;
         Slot slot;
 
-        //Is this slot a safe zone 
-        if (IsPlayableCoordinate(p_Coordinates))
-        {
-            prefab = m_prefabSlotSafe;
-        }
-
+        //Spawn
         if (prefab != null)
         {
             slotObj = Instantiate(prefab, this.transform);
@@ -151,60 +131,83 @@ public class Board : MonoBehaviour
             slot = slotObj.AddComponent<Slot>();
         }
 
-        slotObj.name = "X_" + p_Coordinates.X + "_Y_" + p_Coordinates.Y ;
+        slotObj.name = "X_" + p_coordinates.X + "_Y_" + p_coordinates.Y ;
 
         //Add to container
-        slots.Add(p_Coordinates, slot);
+        slots.Add(p_coordinates, slot);
+        slot.InitByBoard(this, p_coordinates);
 
-        //SetPosition
-        slot.transform.position = GetSlotPosition(p_Coordinates);
-        float scale = GetOptimalScale() / 10; //Todo remove this /10 with a plane with 1x1 scale
-        slot.transform.localScale = new Vector3(scale, 1, scale);
 
         return slot;
 
     }
 
-    Vector3 GetSlotPosition(Coordinates p_Coordinates)
+    public Vector3 GetSlotPosition(Coordinates p_Coordinates)
     {
         if (!IsCoordinatesValid(p_Coordinates)) { return Vector3.zero; }
 
-        float x = Mathf.Lerp(AnchorMin.position.x, AnchorMax.position.x, (float) p_Coordinates.X / (TotalColumns-1));
-        float y = Mathf.Lerp(AnchorMin.position.y, AnchorMax.position.y, (float) p_Coordinates.Y / (TotalLines-1));
+        float x = Mathf.Lerp(AnchorMin.position.x, AnchorMax.position.x, (float) p_Coordinates.X / LastColumn);
+        float y = Mathf.Lerp(AnchorMin.position.y, AnchorMax.position.y, (float) p_Coordinates.Y / LastLine);
 
         return new Vector3(x, y, 0);
 
     }
 
-    bool IsPlayableCoordinate(Coordinates p_Coordinates)
-    {
-        int p_x = p_Coordinates.X;
-        int p_y = p_Coordinates.Y;
-
-        if(p_x<FirstPlayableColumn || p_y <FirstPlayableLine || p_x > LastPlayableColumn || p_y > LastPlayableLine)
-        {
-            //SafeZone
-            return false;
-        }
-        return true;
-    }
-
-    private bool IsCoordinatesValid(Coordinates p_Coordinates)
+    public bool IsCoordinatesValid(Coordinates p_Coordinates)
     {
         //Invalid Index
         if (p_Coordinates.X < 0 || p_Coordinates.Y < 0) { return false; }
-        if (p_Coordinates.X >= TotalColumns || p_Coordinates.Y >= TotalLines) { return false; }
+        if (p_Coordinates.X >= Columns || p_Coordinates.Y >= Lines) { return false; }
 
         return true;
     }
 
-    float GetOptimalScale()
+    public bool IsBorder(Coordinates p_coordinates)
+    {
+        if(!IsCoordinatesValid(p_coordinates)){ return false; }
+
+        if (p_coordinates.X == 0 || p_coordinates.Y == 0 || p_coordinates.X == Columns - 1 || p_coordinates.Y == Lines - 1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool[] GetBorderToActivate(Coordinates p_coordinates)
+    {
+        bool[] border = new bool[8];
+
+        if (!IsCoordinatesValid(p_coordinates)) { return border; }
+
+        //TOP
+        if(p_coordinates.Y==0) { border[0] = true; }
+        //CORNER TOP RIGHT
+        if(p_coordinates.Y==0 && p_coordinates.X == LastColumn) { border[1] = true; }
+        // RIGHT
+        if(p_coordinates.X == LastColumn) { border[2] = true; }
+        //CORNER BOTTOM RIGHT
+        if (p_coordinates.Y == LastLine && p_coordinates.X == LastColumn) { border[3] = true; }
+        //BOTTOM
+        if (p_coordinates.Y == LastLine) { border[4] = true; }
+        //CORNER BOTTOM LEFT
+        if (p_coordinates.Y == LastLine && p_coordinates.X == 0) { border[5] = true; }
+        // LEFT
+        if (p_coordinates.X == 0) { border[6] = true; }
+        //CORNER TOP LEFT
+        if (p_coordinates.Y == 0 && p_coordinates.X == 0) { border[7] = true; }
+
+
+        return border;
+    }
+
+    public float GetOptimalScale()
     {
 
         //TODO Move Anchor min and anchor max in regard of the scale
 
-        float scaleX = Mathf.Abs(AnchorMax.position.x - AnchorMin.position.x) / TotalColumns;
-        float scaleY = Mathf.Abs(AnchorMax.position.y - AnchorMin.position.y) / TotalLines;
+        float scaleX = Mathf.Abs(AnchorMax.position.x - AnchorMin.position.x) / Columns;
+        float scaleY = Mathf.Abs(AnchorMax.position.y - AnchorMin.position.y) / Lines;
 
         return Mathf.Min(new float[] { scaleX, scaleY });
     }
