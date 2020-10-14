@@ -134,8 +134,9 @@ public class Board : MonoBehaviour
         slotObj.name = "X_" + p_coordinates.X + "_Y_" + p_coordinates.Y ;
 
         //Add to container
-        slots.Add(p_coordinates, slot);
         slot.InitByBoard(this, p_coordinates);
+        slots.Add(p_coordinates, slot);
+      
 
 
         return slot;
@@ -146,8 +147,8 @@ public class Board : MonoBehaviour
     {
         if (!IsCoordinatesValid(p_Coordinates)) { return Vector3.zero; }
 
-        float x = Mathf.Lerp(AnchorMin.position.x, AnchorMax.position.x, (float) p_Coordinates.X / LastColumn);
-        float y = Mathf.Lerp(AnchorMin.position.y, AnchorMax.position.y, (float) p_Coordinates.Y / LastLine);
+        float x = Mathf.Lerp(AnchorMin.position.x, AnchorMax.position.x, (float) (p_Coordinates.X) / (Columns));
+        float y = Mathf.Lerp(AnchorMin.position.y, AnchorMax.position.y, (float) (p_Coordinates.Y) / (Lines));
 
         return new Vector3(x, y, 0);
 
