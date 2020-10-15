@@ -147,8 +147,8 @@ public class Board : MonoBehaviour
     {
         if (!IsCoordinatesValid(p_Coordinates)) { return Vector3.zero; }
 
-        float x = Mathf.Lerp(AnchorMin.position.x, AnchorMax.position.x, (float) (p_Coordinates.X) / (Columns));
-        float y = Mathf.Lerp(AnchorMin.position.y, AnchorMax.position.y, (float) (p_Coordinates.Y) / (Lines));
+        float x = Mathf.Lerp(AnchorMin.position.x, AnchorMax.position.x, (float) (p_Coordinates.X) / (Columns-1));
+        float y = Mathf.Lerp(AnchorMin.position.y, AnchorMax.position.y, (float) (p_Coordinates.Y) / (Lines-1));
 
         return new Vector3(x, y, 0);
 
