@@ -71,4 +71,9 @@ public class SpawnableContainer : MonoBehaviour
     {
         return p_coordinates.GetVector() - GetPivotCoordinates();
     }
+
+    void Rotate()
+    {
+
+    }
 }
