@@ -15,7 +15,7 @@ public class UITools : MonoBehaviour
     }
     private void Update()
     {
-        RotateToTest();
+
     }
     public void LoadMenu()
     {
@@ -26,12 +26,6 @@ public class UITools : MonoBehaviour
     {
         Debug.Log("Load Game");
         Loader.LoadScene(Loader.Scene.Game);
-    }
-
-    void RotateToTest()
-    {
-        if(ImgTestRotate != null)
-        ImgTestRotate.transform.localEulerAngles += new Vector3(0, 0, 2);
     }
 
 }
