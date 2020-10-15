@@ -6,18 +6,23 @@ using UnityEngine;
 
 public struct Coordinates
 {
-    int x;
-    int y;
+    int m_x;
+    int m_y;
+
+    public int X { get => m_x; set => m_x = value; }
+    public int Y { get => m_y; set => m_y = value; }
 
     //Constructor
     public Coordinates(int p_x, int p_y)
     {
-        x = p_x;
-        y = p_y;
+        m_x = p_x;
+        m_y = p_y;
     }
 
-    public int X { get => x; set => x = value; }
-    public int Y { get => y; set => y = value; }
+    public Vector2 GetVector()
+    {
+        return new Vector2(m_x, m_y);
+    }
 }
 
 /// <summary>
@@ -143,12 +148,12 @@ public class Board : MonoBehaviour
 
     }
 
-    public Vector3 GetSlotPosition(Coordinates p_Coordinates)
+    public Vector3 GetSlotPosition(Coordinates p_coordinates)
     {
-        if (!IsCoordinatesValid(p_Coordinates)) { return Vector3.zero; }
+        if (!IsCoordinatesValid(p_coordinates)) { return Vector3.zero; }
 
-        float x = Mathf.Lerp(AnchorMin.position.x, AnchorMax.position.x, (float) (p_Coordinates.X) / (Columns-1));
-        float y = Mathf.Lerp(AnchorMin.position.y, AnchorMax.position.y, (float) (p_Coordinates.Y) / (Lines-1));
+        float x = Mathf.Lerp(AnchorMin.position.x, AnchorMax.position.x, (float) (p_coordinates.X) / (Columns-1));
+        float y = Mathf.Lerp(AnchorMin.position.y, AnchorMax.position.y, (float) (p_coordinates.Y) / (Lines-1));
 
         return new Vector3(x, y, 0);
 
